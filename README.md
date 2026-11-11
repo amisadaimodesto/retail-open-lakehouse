@@ -37,7 +37,7 @@ Plataforma de **Modern Data Lakehouse** baseada na arquitetura Medallion (Bronze
     ├── dim_clientes.parquet
     ├── dim_lojas.parquet
     ├── dim_produtos.parquet
-    ├── fato_vendas.parquet
+    ├── fato_vendas/ (Hive Partitioned por ano_venda e mes_venda)
     └── dm_vendas_mensal_categoria.parquet
 ```
 
@@ -50,7 +50,7 @@ Plataforma de **Modern Data Lakehouse** baseada na arquitetura Medallion (Bronze
   - `dim_lojas.parquet`: Hierarquia geográfica e regional.
   - `dim_produtos.parquet`: Categorização e margens brutas unitárias.
   - `dim_calendario.parquet`: Granularidade diária com indicadores de trimestres e fins de semana.
-  - `fato_vendas.parquet`: Grão no nível de item com métricas de receita bruta, descontos, receita líquida, custo total e lucro bruto.
+  - `fato_vendas/ (Hive Partitioned por ano_venda e mes_venda)`: Grão no nível de item com métricas de receita bruta, descontos, receita líquida, custo total e lucro bruto.
   - `dm_vendas_mensal_categoria.parquet`: Datamart analítico consolidando pedidos, itens comercializados e ticket médio.
 
 ---
