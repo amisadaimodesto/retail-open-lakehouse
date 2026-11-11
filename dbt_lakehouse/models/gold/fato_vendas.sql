@@ -2,7 +2,7 @@
     materialized='external',
     location='../data_lake/gold/fato_vendas',
     format='parquet',
-    options={'partition_by': '(ano_venda, mes_venda)'}
+    options={'partition_by': '(ano_venda, mes_venda)', 'overwrite_or_ignore': 1}
 ) }}
 
 WITH silver_vendas AS (
@@ -19,6 +19,10 @@ dim_lojas AS (
 
 dim_produtos AS (
     SELECT sk_produto, id_produto, preco_unitario, custo_unitario FROM {{ ref('dim_produtos') }}
+),
+
+dim_calendario AS (
+    SELECT id_tempo, data_dia FROM {{ ref('dim_calendario') }}
 )
 
 SELECT
@@ -27,6 +31,7 @@ SELECT
     c.sk_cliente,
     l.sk_loja,
     p.sk_produto,
+    cal.id_tempo AS sk_tempo,
     cast(v.data_venda as date) AS data_venda,
     year(cast(v.data_venda as date)) AS ano_venda,
     month(cast(v.data_venda as date)) AS mes_venda,
@@ -42,3 +47,4 @@ FROM silver_vendas v
 INNER JOIN dim_clientes c ON v.id_cliente = c.id_cliente
 INNER JOIN dim_lojas l ON v.id_loja = l.id_loja
 INNER JOIN dim_produtos p ON v.id_produto = p.id_produto
+INNER JOIN dim_calendario cal ON cast(v.data_venda as date) = cal.data_dia
