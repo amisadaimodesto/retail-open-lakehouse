@@ -1,0 +1,11 @@
+retail_lakehouse:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: '../data_lake/lakehouse.duckdb'
+      threads: 1
+      extensions:
+        - parquet
+      settings:
+        preserve_insertion_order: false
