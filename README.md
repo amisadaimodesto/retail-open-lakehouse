@@ -39,3 +39,71 @@ Plataforma de **Modern Data Lakehouse** baseada na arquitetura Medallion (Bronze
     ├── dim_produtos.parquet
     ├── fato_vendas.parquet
     └── dm_vendas_mensal_categoria.parquet
+```
+
+### Detalhamento das Camadas
+
+* **Bronze (`data_lake/bronze/`)**: Arquivos binários Parquet gerados via PyArrow com compressão Snappy, preservando o dado bruto como chegou da origem e registrando timestamps de auditoria de carga.
+* **Silver**: Camada lógica gerenciada pelo dbt responsável por tipagem estrita, higienização semântica e deduplicação analítica via janelamento (`ROW_NUMBER() OVER (PARTITION BY id_venda ORDER BY _ingested_at DESC)`).
+* **Gold (`data_lake/gold/`)**: Star Schema de Ralph Kimball materializado como arquivos Parquet colunares independentes no disco:
+  - `dim_clientes.parquet`: Chave substituta MD5 e atributos cadastrais limpos.
+  - `dim_lojas.parquet`: Hierarquia geográfica e regional.
+  - `dim_produtos.parquet`: Categorização e margens brutas unitárias.
+  - `dim_calendario.parquet`: Granularidade diária com indicadores de trimestres e fins de semana.
+  - `fato_vendas.parquet`: Grão no nível de item com métricas de receita bruta, descontos, receita líquida, custo total e lucro bruto.
+  - `dm_vendas_mensal_categoria.parquet`: Datamart analítico consolidando pedidos, itens comercializados e ticket médio.
+
+---
+
+## 🛠 Stack Tecnológica
+
+| Componente | Ferramenta | Papel na Arquitetura |
+|---|---|---|
+| **Motor Analítico (Compute)** | DuckDB 1.1.3 | Execução analítica in-process vetorizada em C++ |
+| **Formato de Armazenamento** | Apache Parquet (via PyArrow) | Arquivos colunares abertos, eficientes e de alta compressão |
+| **Transformação e Governança** | dbt-core 1.8.7 (`dbt-duckdb` 1.8.3) | Linhagem de dados (DAG), testes de integridade e modelagem SQL |
+| **Ingestão Sintética** | Python 3.12 (Pandas, Faker) | Simulação de eventos e geração controlada de volumes de varejo |
+| **Ambiente de Desenvolvimento** | VS Code no WSL2 (Ubuntu 24.04) | Edição de modelos, depuração e controle de versão |
+| **Orquestração Local** | Bash Shell (`setup.sh`, `run_pipeline.sh`) | Inicialização automática de dependências e execução da esteira |
+
+---
+
+## 🚀 Como Executar o Projeto
+
+### 1. Clonar o repositório
+```bash
+git clone https://github.com/amisadaimodesto/retail-open-lakehouse.git
+cd retail-open-lakehouse
+```
+
+### 2. Configurar o ambiente automaticamente
+O script `setup.sh` inicializa o ambiente virtual `.venv`, atualiza o pip, instala os pacotes do `requirements.txt` e provisiona os diretórios de armazenamento:
+```bash
+./setup.sh
+```
+
+### 3. Rodar a esteira ponta a ponta
+Executa ingestão Bronze, compilação Silver/Gold no dbt, validação dos testes e consulta analítica:
+```bash
+./run_pipeline.sh
+```
+
+### 4. Consultar os arquivos Parquet diretamente
+```bash
+python sql/query_lakehouse.py
+```
+
+---
+
+## 🧪 Governança e Qualidade de Dados
+
+O projeto conta com **19 testes automatizados** integrados:
+* `unique` e `not_null` em todas as chaves primárias e substitutas (`sk_*`).
+* `relationships` validando a integridade referencial estrita entre a `fato_vendas` e as dimensões do Star Schema diretamente sobre os arquivos Parquet.
+* `accepted_values` validando regras de negócio para os status de faturamento (`APROVADO`, `CANCELADO`).
+
+---
+
+## 📄 Licença
+
+Este projeto está distribuído sob a licença [MIT](LICENSE).
