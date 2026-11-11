@@ -7,7 +7,7 @@ print(" TESTE 1: AUDITORIA DE VOLUMETRIA E DEDUPLICAÇÃO")
 print("=" * 65)
 
 bronze_count = con.execute("SELECT count(*) FROM 'data_lake/bronze/vendas.parquet'").fetchone()[0]
-gold_count = con.execute("SELECT count(*), count(distinct id_venda) FROM 'data_lake/gold/fato_vendas.parquet'").fetchone()
+gold_count = con.execute("SELECT count(*), count(distinct id_venda) FROM 'data_lake/gold/fato_vendas/**/*.parquet'").fetchone()
 
 print(f"Total registros na Camada BRONZE (bruto): {bronze_count}")
 print(f"Total registros na Camada GOLD (fato):    {gold_count[0]}")

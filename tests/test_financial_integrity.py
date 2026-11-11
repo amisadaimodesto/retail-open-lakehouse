@@ -10,7 +10,7 @@ q_fato = """
 SELECT 
     ROUND(SUM(valor_liquido), 2) AS receita_fato,
     ROUND(SUM(lucro_bruto), 2) AS lucro_fato
-FROM 'data_lake/gold/fato_vendas.parquet'
+FROM 'data_lake/gold/fato_vendas/**/*.parquet'
 WHERE status_pagamento = 'APROVADO';
 """
 
